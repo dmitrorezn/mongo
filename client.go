@@ -114,14 +114,13 @@ func CheckPasswordHash(password, hash string) bool {
 }
 
 
-func (s *DBSession)CheckUserInDB(login, email, password string) (User, error) {
+func (s *DBSession)CheckUserInDB(login, email, password,status string) (classes.User, error) {
 	var user classes.User
 	hash, err := HashPassword(password)
 	if err != nil {
-		fmt.Println(err.Error())
+
 		return classes.User{}, err
 	}
-
 	collection := s.Session.DB(s.DatabaseName).C(s.TablesMap["user"])
 	err = collection.Find(bson.M{"username": login}).One(&user)
 	if err != nil {
@@ -131,6 +130,7 @@ func (s *DBSession)CheckUserInDB(login, email, password string) (User, error) {
 			Username:       login,
 			Email:          email,
 			HashedPassword: hash,
+			Status:         status,
 		}
 		return user, nil
 	}
