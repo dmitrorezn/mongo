@@ -7,21 +7,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"time"
+
+	"github.com/dmitrorezn/classes"
 )
 
 type obj map[string]interface{}
-
-type User struct {
-	ID             primitive.ObjectID `json:"id" bson:"_id"`
-	IDString       string             `json:"idstr" bson:"_idstr"`
-	Username       string             `json:"username" bson:"username"`
-	Email          string             `json:"email" bson:"email"`
-	HashedPassword string             `json:"password" bson:"password"`
-	Status         string             `json:"status" bson:"status"`
-	//Status 	for              Admin 	 -> admin
-	//Status 	for      		 User	 -> user
-	//Status    for Announcement Author  -> author
-}
 
 type DBSession struct {
 	Session      *mgo.Session
@@ -46,7 +36,7 @@ func (s *DBSession) Close() {
 	s.Session.Close()
 }
 
-func (s *DBSession) Update(selector obj, seter bson.M, updateMany bool, table string) error {
+func (s *DBSession)Update(selector obj, seter bson.M, updateMany bool, table string) error {
 	tablename, ok := s.TablesMap[table]
 	if !ok {
 		return fmt.Errorf("no such table in db")
@@ -66,7 +56,7 @@ func (s *DBSession) Update(selector obj, seter bson.M, updateMany bool, table st
 	return nil
 }
 
-func (s *DBSession) Delete(selector obj, deleteMany bool, table string) error {
+func (s *DBSession)Delete(selector obj, deleteMany bool, table string) error {
 	tablename, ok := s.TablesMap[table]
 	if !ok {
 		return fmt.Errorf("no such table in db")
@@ -125,38 +115,37 @@ func CheckPasswordHash(password, hash string) bool {
 
 
 func (s *DBSession)CheckUserInDB(login, email, password string) (User, error) {
-	var user User
+	var user classes.User
 	hash, err := HashPassword(password)
 	if err != nil {
 		fmt.Println(err.Error())
-		return User{}, err
+		return classes.User{}, err
 	}
 
 	collection := s.Session.DB(s.DatabaseName).C(s.TablesMap["user"])
 	err = collection.Find(bson.M{"username": login}).One(&user)
 	if err != nil {
 		id := primitive.NewObjectIDFromTimestamp(time.Now())
-		user := User{
+		user := classes.User{
 			ID:             id,
-			IDString:       id.String(),
 			Username:       login,
 			Email:          email,
 			HashedPassword: hash,
 		}
 		return user, nil
 	}
-	return User{}, fmt.Errorf("User already exists")
+	return classes.User{}, fmt.Errorf("User already exists")
 }
 
-func (s *DBSession)CheckUserPassword(login, password string) (User, error) {
-	var user User
+func (s *DBSession)CheckUserPassword(login, password string) (classes.User, error) {
+	var user classes.User
 	collection := s.Session.DB(s.DatabaseName).C(s.TablesMap["user"])
 	err := collection.Find(bson.M{"username": login}).One(&user)
 	if err != nil {
-		return User{}, err
+		return classes.User{}, err
 	}
 	if CheckPasswordHash(password, user.HashedPassword) != true {
-		return User{}, fmt.Errorf("Error: Wrong password or login for this account!")
+		return classes.User{}, fmt.Errorf("Error: Wrong password or login for this account!")
 	}
 	return user, nil
 }
