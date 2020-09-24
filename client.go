@@ -89,9 +89,9 @@ func (s *DBSession) Insert(data interface{}, table string) error {
 	return nil
 }
 
-func (s *DBSession) Read(selector obj, table string) ([]interface{}, error) {
-	var result []interface{}
-	tablename, ok := s.TablesMap[table]
+func (s *DBSession) ReadAnnouncements(selector obj) ([]classes.Announcement, error) {
+	var result []classes.Announcement
+	tablename, ok := s.TablesMap["announcements"]
 	if !ok {
 		return nil, fmt.Errorf("no such table in db")
 	}
