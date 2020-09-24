@@ -109,7 +109,7 @@ func (s *DBSession) ReadAnnouncements(selector obj) ([]classes.Announcement, err
 }
 func (s *DBSession) ReadOrder(selector obj) (classes.Order, error) {
 	var result classes.Order
-	tablename := "announcementstable"
+	tablename := "orderstable"
 	workers := s.Session.DB(s.DatabaseName).C(tablename)
 	err := workers.Find(selector).One(&result)
 	if err != nil  {
