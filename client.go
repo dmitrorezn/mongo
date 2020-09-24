@@ -13,6 +13,14 @@ import (
 
 type obj map[string]interface{}
 
+func init()  {
+	tablesMap := make(map[string]string)
+	tablesMap["user"] ="userstable"
+	tablesMap["activities"] = "activitiestable"
+	tablesMap["orders"] = "orderstable"
+	tablesMap["announcements"] = "announcementstable"
+}
+
 type DBSession struct {
 	Session      *mgo.Session
 	DatabaseName string
@@ -91,10 +99,7 @@ func (s *DBSession) Insert(data interface{}, table string) error {
 
 func (s *DBSession) ReadAnnouncements(selector obj) ([]classes.Announcement, error) {
 	var result []classes.Announcement
-	tablename, ok := s.TablesMap["announcements"]
-	if !ok {
-		return nil, fmt.Errorf("no such table in db")
-	}
+	tablename := "announcementstable"
 	workers := s.Session.DB(s.DatabaseName).C(tablename)
 	err := workers.Find(selector).All(&result)
 	if len(result) == 0  {
@@ -102,6 +107,27 @@ func (s *DBSession) ReadAnnouncements(selector obj) ([]classes.Announcement, err
 	}
 	return result, nil
 }
+func (s *DBSession) ReadOrder(selector obj) (classes.Order, error) {
+	var result classes.Order
+	tablename := "announcementstable"
+	workers := s.Session.DB(s.DatabaseName).C(tablename)
+	err := workers.Find(selector).One(&result)
+	if err != nil  {
+		return classes.Order{}, err
+	}
+	return result, nil
+}
+func (s *DBSession) Read(selector obj) ([]interface{}, error) {
+	var result []interface{}
+	tablename := "announcementstable"
+	workers := s.Session.DB(s.DatabaseName).C(tablename)
+	err := workers.Find(selector).One(&result)
+	if err != nil  {
+		return nil, err
+	}
+	return result, nil
+}
+
 
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
