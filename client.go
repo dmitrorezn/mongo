@@ -97,7 +97,7 @@ func (s *DBSession) Read(selector obj, table string) ([]interface{}, error) {
 	}
 	workers := s.Session.DB(s.DatabaseName).C(tablename)
 	err := workers.Find(selector).All(&result)
-	if len(result) == 0 {
+	if len(result) == 0  {
 		return nil, err
 	}
 	return result, nil
