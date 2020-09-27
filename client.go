@@ -19,6 +19,7 @@ func init()  {
 	tablesMap["activities"] = "activitiestable"
 	tablesMap["orders"] = "orderstable"
 	tablesMap["announcements"] = "announcementstable"
+
 }
 
 type DBSession struct {
@@ -44,7 +45,7 @@ func (s *DBSession) Close() {
 	s.Session.Close()
 }
 
-func (s *DBSession)Update(selector obj, seter bson.M, updateMany bool, table string) error {
+func (s *DBSession)Update(selector obj, seter obj, updateMany bool, table string) error {
 	tablename, ok := s.TablesMap[table]
 	if !ok {
 		return fmt.Errorf("no such table in db")
@@ -102,11 +103,12 @@ func (s *DBSession) ReadAnnouncements(selector obj) ([]classes.Announcement, err
 	tablename := "announcementstable"
 	workers := s.Session.DB(s.DatabaseName).C(tablename)
 	err := workers.Find(selector).All(&result)
-	if len(result) == 0  {
-		return nil, err
+	if err != nil ||  len(result) == 0  {
+		return nil, fmt.Errorf("no such announcement with this id")
 	}
 	return result, nil
 }
+
 func (s *DBSession) ReadOrder(selector obj) (classes.Order, error) {
 	var result classes.Order
 	tablename := "orderstable"
@@ -117,6 +119,18 @@ func (s *DBSession) ReadOrder(selector obj) (classes.Order, error) {
 	}
 	return result, nil
 }
+
+func(s *DBSession) ReadUser(selector obj) (classes.User,error) {
+	var result classes.User
+	tablename := "userstable"
+	workers := s.Session.DB(s.DatabaseName).C(tablename)
+	err := workers.Find(selector).One(&result)
+	if err != nil  {
+		return classes.User{}, err
+	}
+	return result, nil
+}
+
 func (s *DBSession) Read(selector obj) ([]interface{}, error) {
 	var result []interface{}
 	tablename := "announcementstable"
@@ -175,3 +189,4 @@ func (s *DBSession)CheckUserPassword(login, password string) (classes.User, erro
 	}
 	return user, nil
 }
+
